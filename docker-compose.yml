@@ -1,0 +1,19 @@
+services:
+  redis:
+    restart: no
+    image: redis:7.4.1
+    ports:
+      - "6379:6379"
+    container_name: redis
+  redis2:
+    restart: no
+    image: redis:7.4.1
+    ports:
+      - "6380:6379"
+    container_name: redis2
+  redis3:
+    restart: no
+    image: redis:7.4.1
+    ports:
+      - "6381:6379"
+    container_name: redis3
