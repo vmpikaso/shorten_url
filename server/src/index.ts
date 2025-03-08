@@ -1,17 +1,37 @@
 import Fastify, { type FastifyRequest } from "fastify";
 import { createClient } from "redis";
 import { generate } from "shortid";
+import { cleanEnv, str, num } from "envalid";
+import "dotenv/config";
+
+function checkEnv() {
+  // Validate environment variables
+  return cleanEnv(process.env, {
+    NODE_ENV: str({
+      choices: ["development", "production"],
+      default: "development",
+    }),
+    REDIS_URL: str(),
+    REDIS_URL2: str(),
+    REDIS_URL3: str(),
+    PORT: num({ default: 3000 }),
+    HOST: str({ default: "http://localhost" }),
+  });
+}
 
 async function bootstrap() {
+  const env = checkEnv();
+
+  // Initialize Fastify
   const app = Fastify({ logger: true });
   const redisClients = [
-    await createClient({ url: "redis://localhost:6379" })
+    await createClient({ url: `redis://${env.REDIS_URL}` })
       .on("error", (err) => console.log("Redis Client Error", err))
       .connect(),
-    await createClient({ url: "redis://localhost:6380" })
+    await createClient({ url: `redis://${env.REDIS_URL2}` })
       .on("error", (err) => console.log("Redis2 Client Error", err))
       .connect(),
-    await createClient({ url: "redis://localhost:6381" })
+    await createClient({ url: `redis://${env.REDIS_URL3}` })
       .on("error", (err) => console.log("Redis3 Client Error", err))
       .connect(),
   ];
@@ -35,7 +55,7 @@ async function bootstrap() {
       const redisClient = getRedisClient(shortId);
 
       await redisClient.set(shortId, url);
-      res.status(201).send({ shortUrl: `http://localhost:3000/${shortId}` });
+      res.status(201).send({ shortUrl: `${env.HOST}:${env.PORT}/${shortId}` });
     }
   );
 
@@ -58,7 +78,7 @@ async function bootstrap() {
   });
 
   try {
-    await app.listen({ port: 3000 });
+    await app.listen({ port: env.PORT });
   } catch (err) {
     app.log.error(err);
     process.exit(1);
