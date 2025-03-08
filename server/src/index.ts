@@ -47,14 +47,17 @@ async function bootstrap() {
   // Endpoint to shorten a URL
   app.post(
     "/shorten",
-    async (req: FastifyRequest<{ Body: { url: string } }>, res) => {
-      const { url } = req.body;
+    async (
+      req: FastifyRequest<{ Body: { url: string; ttl?: number } }>,
+      res
+    ) => {
+      const { url, ttl } = req.body; // ttl (time-to-live) is optional
       if (!url) return res.status(400).send("URL is required");
 
       const shortId = generate();
       const redisClient = getRedisClient(shortId);
 
-      await redisClient.set(shortId, url);
+      await redisClient.set(shortId, url, { EX: ttl || 3600 }); // Default TTL of 1 hour in seconds
       res.status(201).send({ shortUrl: `${env.HOST}:${env.PORT}/${shortId}` });
     }
   );
@@ -67,8 +70,10 @@ async function bootstrap() {
       const redisClient = getRedisClient(shortId);
       const url = await redisClient.get(shortId);
       if (!url) {
+        app.log.info(`URL not found for shortId: ${shortId}`);
         return res.status(404).send("URL not found");
       }
+      app.log.info(`Redirecting to URL: ${url}`);
       res.redirect(url);
     }
   );
