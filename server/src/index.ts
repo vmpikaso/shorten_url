@@ -1,6 +1,6 @@
 import Fastify, { type FastifyRequest } from 'fastify';
 import { createClient } from 'redis';
-import { generate } from 'shortid';
+import { nanoid } from 'nanoid';
 import { cleanEnv, str, num } from 'envalid';
 import 'dotenv/config';
 
@@ -44,7 +44,7 @@ async function bootstrap() {
     const { url, ttl } = req.body; // ttl (time-to-live) is optional
     if (!url) return res.status(400).send('URL is required');
 
-    const shortId = generate();
+    const shortId = nanoid();
     const redisClient = getRedisClient(shortId);
 
     await redisClient.set(shortId, url, { EX: ttl || 3600 }); // Default TTL of 1 hour in seconds
