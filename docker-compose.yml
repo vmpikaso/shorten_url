@@ -17,3 +17,17 @@ services:
     ports:
       - "6381:6379"
     container_name: redis3
+  server:
+    image: personal_shorten_url:latest
+    environment:
+      NODE_ENV: production
+    env_file:
+      - server/.env
+    ports:
+      - 3000:3000
+    container_name: shortener
+    depends_on:
+      - redis
+      - redis2
+      - redis3
+      
