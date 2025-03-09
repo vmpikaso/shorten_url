@@ -11,10 +11,12 @@ ARG PNPM_VERSION=9.15.2
 
 ################################################################################
 # Use node image for base image for all stages.
-FROM node:${NODE_VERSION}-alpine AS base
+FROM node:${NODE_VERSION}-alpine AS origin
 
 # Set working directory for all build stages.
 WORKDIR /usr/src
+
+FROM origin AS base
 
 # Install pnpm.
 RUN --mount=type=cache,target=/root/.npm \
@@ -52,7 +54,7 @@ RUN pnpm run build
 ################################################################################
 # Create a new stage to run the application with minimal runtime dependencies
 # where the necessary files are copied from the build stage.
-FROM base AS final
+FROM origin AS final
 
 # Use production node environment by default.
 ENV NODE_ENV=production

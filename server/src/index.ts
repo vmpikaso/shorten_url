@@ -7,10 +7,13 @@ import 'dotenv/config';
 function checkEnv() {
   // Validate environment variables
   return cleanEnv(process.env, {
-    NODE_ENV: str({ choices: ['development', 'production'], default: 'development' }),
-    REDIS_URL: str(),
-    REDIS_URL2: str(),
-    REDIS_URL3: str(),
+    NODE_ENV: str({
+      choices: ['development', 'production'],
+      default: 'development',
+    }),
+    REDIS_URL: str({ default: 'redis://localhost:6379' }),
+    REDIS_URL2: str({ default: 'redis://localhost:6380' }),
+    REDIS_URL3: str({ default: 'redis://localhost:6381' }),
     PORT: num({ default: 3000 }),
     HOST: str({ default: 'http://localhost' }),
   });
